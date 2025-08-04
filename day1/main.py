@@ -74,3 +74,17 @@ def delete_item(item_id: int):
         # return Response(status_code=status.HTTP_404_NOT_FOUND, content="Item not found")
     my_items.pop(index)
     return Response(status_code=status.HTTP_204_NO_CONTENT)  # Return a response with no content (204 status code)
+
+
+
+
+@app.put("/items/{item_id}")
+def update_item(item_id: int, item: Item):
+    index=find_index(item_id)
+    if index is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    item_dict = item.dict()
+    item_dict['id'] = item_id  # Ensure the ID is set to the item_id
+    my_items[index] = item_dict
+    return {"item": my_items[index]}
+    
