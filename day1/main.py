@@ -1,12 +1,14 @@
 from typing import Optional
 from fastapi import Body, FastAPI
 from pydantic import BaseModel
+
+from random import randrange
 app=FastAPI()
 class Item(BaseModel):
     title: str
     published: bool = True # default value optional field for postg request
     description:Optional[str]=None
-my_items = [{"title": "Phone"}, {"title": "Tablet"}   ]  # creaeting a temporarry variabel ewhic will acta smy database for as of now latwe we will be using a postgres sql o rrsome other sort of sql data bases
+my_items = [{"title": "Phone","id":3}, {"title": "Tablet","id":2}   ]  # creaeting a temporarry variabel ewhic will acta smy database for as of now latwe we will be using a postgres sql o rrsome other sort of sql data bases
 
 @app.get("/health")
 async def health():
@@ -24,6 +26,20 @@ async def create_item(item_id: int, item: Item):
 
 @app.post("/items")
 async def create_items(new_item:Item):
-    print(new_item.description)
+    item_dict=new_item.dict()
+    item_dict['id']=randrange(0,10000)
     print(new_item.dict()) #new_item.dict() methis to create a dictionary from the pydantic model
-    return {"message": f"title:{new_item.title}"}
+    my_items.append(item_dict)
+
+    return my_items
+
+def find_item(id):
+    for i in my_items:
+        if i["id"]==id:
+            return i
+
+@app.get("/items/{item_id}")
+def get_item(item_id: int):
+    item=find_item(item_id)
+    print(item_id)
+    return {"item": item}
