@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import Body, FastAPI
+from fastapi import Body, FastAPI,Response,status,HTTPException
 from pydantic import BaseModel
 
 from random import randrange
@@ -24,10 +24,11 @@ async def root():
 async def create_item(item_id: int, item: Item):
     return {"item_id": item_id, "item": item}
 
-@app.post("/items")
+@app.post("/items",status_code=status.HTTP_201_CREATED)  # status code 201 is for created
 async def create_items(new_item:Item):
     item_dict=new_item.dict()
     item_dict['id']=randrange(0,10000)
+
     print(new_item.dict()) #new_item.dict() methis to create a dictionary from the pydantic model
     my_items.append(item_dict)
 
@@ -38,8 +39,27 @@ def find_item(id):
         if i["id"]==id:
             return i
 
+@app.get("/items/latest")
+def get_latest_item():
+    if len(my_items) == 0:
+        return {"message": "No items found"}
+    latest_item = my_items[len(my_items)-1]  # Get the last item in the list
+    return {"latest_item": latest_item}
+
 @app.get("/items/{item_id}")
-def get_item(item_id: int):
-    item=find_item(item_id)
+def get_item(item_id: int, response: Response):  # :int is a validator which checks if item_id is an integer nd also it also chnges to an integer
+    item=find_item(item_id)  
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        # Alternatively, you can use the following line to return a custom response
+        # response.status_code = status.HTTP_404_NOT_FOUND
+        # return {"message": "Item not found"}
+        # Uncomment the following lines if you want to return a custom response instead of raising an exception
+        # response.status_code = status.HTTP_404_NOT_FOUND
+        # return {"message": "Item not found"}
     print(item_id)
     return {"item": item}
+
+
+
+
