@@ -60,6 +60,17 @@ def get_item(item_id: int, response: Response):  # :int is a validator which che
     print(item_id)
     return {"item": item}
 
+def find_index(id):
+    for i,p in enumerate(my_items):
+        if p["id"]==id:
+            return i
 
-
-
+@app.delete("/items/{item_id}",status_code=status.HTTP_204_NO_CONTENT)  # status code 204 is for no content
+def delete_item(item_id: int):
+    index=find_index(item_id)
+    if index==None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        # Alternatively, you can use the following line to return a custom response
+        # return Response(status_code=status.HTTP_404_NOT_FOUND, content="Item not found")
+    my_items.pop(index)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)  # Return a response with no content (204 status code)
